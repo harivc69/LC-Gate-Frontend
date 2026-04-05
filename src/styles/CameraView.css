@@ -1,0 +1,15 @@
+/* ── Camera feed panel ───────────────────────────────────────────────────────── */
+.camera-view {
+  flex: 3;
+}
+
+.camera-view__body {
+  background: #000;
+}
+
+/* Placeholder fill — replaced by real <video> or <canvas> at runtime */
+.camera-view__feed {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}

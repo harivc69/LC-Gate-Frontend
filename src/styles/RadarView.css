@@ -1,0 +1,15 @@
+/* ── Radar sensor display panel ──────────────────────────────────────────────── */
+.radar-view {
+  flex: 2;
+}
+
+.radar-view__body {
+  background: #040b16;
+  align-items: center;
+  justify-content: center;
+}
+
+.radar-view__body svg {
+  display: block;
+  max-height: 100%;
+}

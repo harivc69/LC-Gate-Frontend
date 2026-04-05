@@ -1,0 +1,111 @@
+/* ── System header bar ───────────────────────────────────────────────────────── */
+.sys-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--hdr-h);
+  flex-shrink: 0;
+  padding: 0 14px;
+  background: var(--clr-bg-header);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+/* ── Brand block (left) ─────────────────────────────────────────────────────── */
+.sys-header__brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+  min-width: 200px;
+}
+
+.sys-header__title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--clr-text-hi);
+  font-family: var(--font-ui);
+  line-height: 1;
+}
+
+.sys-header__subtitle {
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  color: var(--clr-text-dim);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ── Clock block (center) ───────────────────────────────────────────────────── */
+.sys-header__clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+}
+
+.sys-header__time {
+  font-size: 20px;
+  font-weight: 500;
+  font-family: var(--font-mono);
+  color: var(--clr-text-hi);
+  letter-spacing: 3px;
+  line-height: 1.1;
+}
+
+.sys-header__date {
+  font-size: 8.5px;
+  font-family: var(--font-mono);
+  color: var(--clr-text-dim);
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+
+/* ── Subsystem indicators row (right) ────────────────────────────────────────── */
+.sys-header__subsystems {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 200px;
+  justify-content: flex-end;
+}
+
+/* ── Subsystem indicator ─────────────────────────────────────────────────────── */
+.subsys-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subsys-indicator__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.subsys-indicator__dot--ok {
+  background: var(--clr-ok);
+  box-shadow: 0 0 8px rgba(0, 200, 102, 0.8);
+}
+
+.subsys-indicator__dot--fault {
+  background: var(--clr-fault);
+  box-shadow: 0 0 8px rgba(255, 51, 51, 0.8);
+  animation: fault-pulse 1s ease-in-out infinite;
+}
+
+@keyframes fault-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.subsys-indicator__label {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.8px;
+  color: var(--clr-text);
+  text-transform: uppercase;
+}
