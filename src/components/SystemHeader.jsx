@@ -1,23 +1,22 @@
 import { useState, useEffect } from 'react'
 import '../styles/SystemHeader.css'
 
-// Monitored subsystem definitions
 const SUBSYSTEMS = [
   { id: 'camera',  label: 'CAM'    },
   { id: 'radar',   label: 'RADAR'  },
-  { id: 'gate',    label: 'GATE'   },
-  { id: 'network', label: 'NET'    },
-  { id: 'server',  label: 'SRV'    },
+  { id: 'dcdc',    label: 'DCDC'   },
+  { id: 'mcu',     label: 'MCU'    },
   { id: 'sensor',  label: 'SENSOR' },
+  { id: 'network', label: 'NET'    },
 ]
 
 const DEFAULT_STATUSES = {
   camera:  true,
   radar:   true,
-  gate:    true,
-  network: true,
-  server:  true,
+  dcdc:    true,
+  mcu:     true,
   sensor:  true,
+  network: true,
 }
 
 function pad(n) {
@@ -33,7 +32,7 @@ function SubsystemIndicator({ label, online }) {
   )
 }
 
-// statuses prop: { camera: bool, radar: bool, gate: bool, network: bool, server: bool, sensor: bool }
+// statuses prop: { camera: bool, radar: bool, dcdc: bool, mcu: bool, sensor: bool, network: bool }
 export default function SystemHeader({ statuses = DEFAULT_STATUSES }) {
   const [now, setNow] = useState(new Date())
 
