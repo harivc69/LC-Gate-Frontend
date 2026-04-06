@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { useWebRTC } from '../hooks/useWebRTC'
+import { useEffect, useRef, useState } from 'react'
+import webRTCManager from '../services/WebRTCManager'
 import '../styles/CameraView.css'
 
 const STATUS_LABEL = {
@@ -22,12 +22,18 @@ const STATUS_CLASS = {
 
 export default function CameraView() {
   const videoRef = useRef(null)
-  const { stream, connectionState } = useWebRTC()
+  const [stream, setStream] = useState(null)
+  const [connectionState, setConnectionState] = useState('new')
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream
-    }
+    webRTCManager.onTrack = (s) => setStream(s)
+    webRTCManager.onConnectionChange = (state) => setConnectionState(state)
+    webRTCManager.connect().catch(() => setConnectionState('failed'))
+    return () => webRTCManager.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (videoRef.current && stream) videoRef.current.srcObject = stream
   }, [stream])
 
   const label = STATUS_LABEL[connectionState] ?? 'OFFLINE'
@@ -43,13 +49,7 @@ export default function CameraView() {
         </div>
       </div>
       <div className="panel__body camera-view__body">
-        <video
-          ref={videoRef}
-          className="camera-view__feed"
-          autoPlay
-          muted
-          playsInline
-        />
+        <video ref={videoRef} className="camera-view__feed" autoPlay muted playsInline />
         {!stream && (
           <div className="camera-view__overlay">
             {connectionState === 'failed' ? 'Connection Failed' : 'Connecting…'}

@@ -137,7 +137,7 @@ function RailTrack() {
  * Single barrier gate arm.
  *
  * type
- *   'full'       — pivot at LEFT edge (PIV_L), arm reaches RIGHT edge (PIV_R)
+ *   'full'       — pivot at LEFT edge (PIV_L), arm reaches exact RIGHT edge (SVG_W)
  *   'left-half'  — pivot at LEFT edge (PIV_L), arm reaches SVG centre (ROAD_CX)
  *   'right-half' — pivot at RIGHT edge (PIV_R), arm reaches SVG centre (ROAD_CX)
  *
@@ -152,7 +152,7 @@ function Barrier({ y, type, open = false }) {
   const isRight  = type === 'right-half'
   const isFull   = type === 'full'
   const pivotX   = isRight ? PIV_R : PIV_L
-  const armEnd   = isRight ? ROAD_CX : (isFull ? PIV_R : ROAD_CX)
+  const armEnd   = isRight ? ROAD_CX : (isFull ? SVG_W : ROAD_CX)
   const armLen   = Math.abs(armEnd - pivotX)
   const openAng  = isRight ? 80 : -80
 
