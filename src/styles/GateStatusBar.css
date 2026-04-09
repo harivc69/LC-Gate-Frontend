@@ -8,123 +8,63 @@
   background: var(--clr-bg-header);
   border-bottom: 1px solid var(--clr-border);
   transition: background 0.3s ease, border-color 0.3s ease;
+  position: relative;
 }
 
 /* Red-tinted bar when gate is in manual override */
 .gsb--override {
   background: rgba(38, 4, 4, 0.85);
-  border-bottom-color: rgba(255, 51, 51, 0.35);
+  border-bottom-color: rgba(255, 51, 51, 0.5);
 }
 
-/* Site / asset identifier */
-.gsb__id {
-  font-size: 8.5px;
+/* ── Mode text — absolutely centered in the bar ──────────────────────────────── */
+.gsb__mode {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.gsb__mode-value {
+  font-size: 15px;
   font-family: var(--font-mono);
   font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--clr-text-dim);
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  padding-right: 14px;
-  flex-shrink: 0;
 }
 
-/* Vertical divider between cells */
-.gsb__sep {
-  width: 1px;
-  height: 22px;
-  background: var(--clr-border);
-  flex-shrink: 0;
-}
-
-/* Pushes the last cell (GATE MODE) to the far right */
-.gsb__spacer {
-  flex: 1;
-}
-
-/* ── Status cell ─────────────────────────────────────────────────────────────── */
-.gsb__cell {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 14px;
-  gap: 3px;
-  flex-shrink: 0;
-}
-
-/* Small dim descriptor above the value */
-.gsb__label {
-  font-size: 7px;
-  font-family: var(--font-mono);
-  letter-spacing: 1.4px;
-  color: var(--clr-text-dim);
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-/* LED + value row */
-.gsb__row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.gsb__value {
-  font-size: 10.5px;
-  font-family: var(--font-mono);
-  font-weight: 600;
-  letter-spacing: 0.9px;
-  text-transform: uppercase;
-  line-height: 1;
-}
-
-.gsb__value--ok {
+.gsb__mode-value--ok {
   color: var(--clr-ok);
 }
 
-.gsb__value--warn {
-  color: var(--clr-warn);
-}
-
-.gsb__value--fault {
+.gsb__mode-value--fault {
   color: var(--clr-fault);
+  text-shadow: 0 0 12px rgba(255, 51, 51, 0.7);
 }
 
-/* ── LED lamp indicator ───────────────────────────────────────────────────────── */
-.gsb__lamp {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
+/* ── Indicator boxes ─────────────────────────────────────────────────────────── */
+.gsb__indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  border-radius: 4px;
+  background-color: rgba(220, 53, 69, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: 12px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(220, 53, 69, 0.2);
 }
 
-.gsb__lamp--ok {
-  background: var(--clr-ok);
-  box-shadow: 0 0 5px rgba(0, 200, 102, 0.85);
+.gsb__indicator-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
 }
 
-.gsb__lamp--warn {
-  background: var(--clr-warn);
-  box-shadow: 0 0 5px rgba(255, 170, 0, 0.85);
-}
-
-.gsb__lamp--fault {
-  background: var(--clr-fault);
-  box-shadow: 0 0 6px rgba(255, 51, 51, 0.9);
-}
-
-.gsb__lamp--blink {
-  animation: lamp-blink 0.7s ease-in-out infinite;
-}
-
-@keyframes lamp-blink {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.1;
-  }
+.gsb__indicator--active {
+  background-color: rgba(40, 167, 69, 0.5);
+  border-color: rgba(40, 167, 69, 0.4);
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
 }

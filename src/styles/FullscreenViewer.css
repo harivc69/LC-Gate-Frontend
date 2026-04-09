@@ -1,0 +1,112 @@
+/* ── Fullscreen viewer overlay ────────────────────────────────────────────────── */
+.fullscreen-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  animation: fv-fade-in 0.2s ease-out;
+}
+
+@keyframes fv-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fullscreen-viewer__content {
+  display: flex;
+  flex-direction: column;
+  width: 92vw;
+  height: 90vh;
+  background: var(--clr-bg-panel);
+  border: 1px solid var(--clr-border-hi);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.fullscreen-viewer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--panel-hdr-h);
+  flex-shrink: 0;
+  padding: 0 12px;
+  background: var(--clr-bg-header);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.fullscreen-viewer__title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  font-family: var(--font-mono);
+  color: var(--clr-text-hi);
+  text-transform: uppercase;
+}
+
+.fullscreen-viewer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.fullscreen-viewer__close:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--clr-text-hi);
+}
+
+.fullscreen-viewer__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  position: relative;
+}
+
+.fullscreen-viewer__feed {
+  max-width: 100%;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.fullscreen-viewer__empty {
+  color: var(--clr-text-mute);
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+}
+
+/* ── Eye icon button (shared by CameraView & RadarView) ──────────────────────── */
+.panel__fullscreen-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--clr-text-dim);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.panel__fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--clr-accent);
+}

@@ -1,10 +1,11 @@
 /* ── Camera feed panel ───────────────────────────────────────────────────────── */
 .camera-view {
-  flex: 3;
+  flex: 1;
 }
 
 .camera-view__body {
   background: #000;
+  /* inherits display:flex + position:relative from panel__body */
 }
 
 .camera-view__feed {
@@ -15,7 +16,7 @@
   object-fit: contain;
 }
 
-/* Shown while the WebRTC stream hasn't arrived yet */
+/* Shown while the MJPEG stream hasn't arrived yet */
 .camera-view__overlay {
   position: absolute;
   inset: 0;

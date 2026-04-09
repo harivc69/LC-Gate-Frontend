@@ -1,61 +1,52 @@
-import { useEffect, useRef, useState } from 'react'
-import webRTCManager from '../services/WebRTCManager'
+import { useState } from 'react'
 import '../styles/CameraView.css'
+import FullscreenViewer from './FullscreenViewer'
 
-const STATUS_LABEL = {
-  connected:    'LIVE',
-  connecting:   'CONNECTING',
-  new:          'CONNECTING',
-  disconnected: 'OFFLINE',
-  failed:       'FAULT',
-  closed:       'OFFLINE',
+function EyeIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
 }
 
-const STATUS_CLASS = {
-  connected:    'panel__status--ok',
-  connecting:   'panel__status--warn',
-  new:          'panel__status--warn',
-  disconnected: 'panel__status--fault',
-  failed:       'panel__status--fault',
-  closed:       'panel__status--fault',
-}
-
-export default function CameraView() {
-  const videoRef = useRef(null)
-  const [stream, setStream] = useState(null)
-  const [connectionState, setConnectionState] = useState('new')
-
-  useEffect(() => {
-    webRTCManager.onTrack = (s) => setStream(s)
-    webRTCManager.onConnectionChange = (state) => setConnectionState(state)
-    webRTCManager.connect().catch(() => setConnectionState('failed'))
-    return () => webRTCManager.disconnect()
-  }, [])
-
-  useEffect(() => {
-    if (videoRef.current && stream) videoRef.current.srcObject = stream
-  }, [stream])
-
-  const label = STATUS_LABEL[connectionState] ?? 'OFFLINE'
-  const cls   = STATUS_CLASS[connectionState] ?? 'panel__status--fault'
+export default function CameraView({ title = 'Camera Feed', streamUrl = null }) {
+  const [fullscreen, setFullscreen] = useState(false)
 
   return (
     <div className="panel camera-view">
       <div className="panel__header">
-        <span className="panel__title">Camera Feed</span>
+        <span className="panel__title">{title}</span>
         <div className="panel__meta">
-          <span className="panel__tag">CH-01 · RTSP/WebRTC</span>
-          <span className={`panel__status ${cls}`}>{label}</span>
+          <button
+            className="panel__fullscreen-btn"
+            onClick={() => setFullscreen(true)}
+            aria-label="View fullscreen"
+            title="Fullscreen"
+          >
+            <EyeIcon />
+          </button>
+          <span className={`panel__status ${streamUrl ? 'panel__status--ok' : 'panel__status--fault'}`}>
+            {streamUrl ? 'LIVE' : 'OFFLINE'}
+          </span>
         </div>
       </div>
       <div className="panel__body camera-view__body">
-        <video ref={videoRef} className="camera-view__feed" autoPlay muted playsInline />
-        {!stream && (
-          <div className="camera-view__overlay">
-            {connectionState === 'failed' ? 'Connection Failed' : 'Connecting…'}
-          </div>
+        {streamUrl ? (
+          <img src={streamUrl} className="camera-view__feed" alt={title} />
+        ) : (
+          <div className="camera-view__overlay">Not Installed</div>
         )}
       </div>
+
+      {fullscreen && (
+        <FullscreenViewer
+          title={title}
+          streamUrl={streamUrl}
+          onClose={() => setFullscreen(false)}
+        />
+      )}
     </div>
   )
 }
