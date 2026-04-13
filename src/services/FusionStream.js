@@ -20,10 +20,9 @@ export class FusionStream {
     this._alive       = false  // true while messages are flowing
   }
 
-  connect(apiBase) {
+  connect(wsUrl) {
     this._active = true
-    this._url = (apiBase || 'http://localhost:8000')
-      .replace(/^http/, 'ws') + '/ws/fusion'
+    this._url = wsUrl || 'ws://localhost:4501'
     this._open()
   }
 

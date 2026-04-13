@@ -1,0 +1,113 @@
+/* ── Manual Override Request Modal ─────────────────────────────────────────── */
+
+.mo-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 10000;
+  animation: mo-fade-in 0.3s ease-out;
+}
+
+@keyframes mo-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.mo-modal__card {
+  background: rgba(45, 10, 10, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 51, 51, 0.5);
+  border-radius: 12px;
+  padding: 40px 48px;
+  text-align: center;
+  max-width: 560px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6),
+              0 0 30px rgba(255, 51, 51, 0.15);
+  animation: mo-card-in 0.35s ease-out;
+}
+
+@keyframes mo-card-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.mo-modal__title {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #ff3333;
+  margin: 0 0 14px;
+  animation: mo-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mo-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+.mo-modal__desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0 0 28px;
+  line-height: 1.65;
+  text-align: justify;
+  text-justify: inter-word;
+  hyphens: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mo-modal__desc p {
+  margin: 0;
+  padding: 0;
+}
+
+.mo-modal__desc p:first-child {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 51, 51, 0.2);
+}
+
+.mo-modal__reason {
+  color: #ff6b6b;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.4px;
+}
+
+.mo-modal__btn {
+  background: rgba(255, 51, 51, 0.18);
+  border: 1px solid rgba(255, 51, 51, 0.5);
+  color: #ff3333;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 12px 40px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.1s;
+}
+
+.mo-modal__btn:hover:not(:disabled) {
+  background: rgba(255, 51, 51, 0.32);
+  border-color: rgba(255, 51, 51, 0.7);
+}
+
+.mo-modal__btn:active:not(:disabled) {
+  background: rgba(255, 51, 51, 0.45);
+  transform: scale(0.97);
+}
+
+.mo-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

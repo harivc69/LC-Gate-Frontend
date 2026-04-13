@@ -55,8 +55,8 @@ function ZoneBands({ fusionZones = {} }) {
       {ZONE_BANDS.map((z, i) => {
         const keyL = labelToKey(z.labels[0])
         const keyR = labelToKey(z.labels[1])
-        const countL = fusionZones[keyL]
-        const countR = fusionZones[keyR]
+        const countL = fusionZones[keyL] ?? 0
+        const countR = fusionZones[keyR] ?? 0
         const cy = z.y + z.h / 2
 
         return (
@@ -76,30 +76,26 @@ function ZoneBands({ fusionZones = {} }) {
             </text>
 
             {/* Fusion count — left half center */}
-            {countL !== undefined && (
-              <text x={ROAD_CX / 2} y={cy + 1}
-                fill={countL > 0 ? '#00ff99' : 'rgba(0,255,153,0.35)'}
-                fontSize={countL > 0 ? 16 : 13}
-                fontWeight="bold"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontFamily="monospace">
-                {countL}
-              </text>
-            )}
+            <text x={ROAD_CX / 2} y={cy + 1}
+              fill={countL > 0 ? '#00ff99' : 'rgba(0,255,153,0.35)'}
+              fontSize={countL > 0 ? 16 : 13}
+              fontWeight="bold"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontFamily="monospace">
+              {countL}
+            </text>
 
             {/* Fusion count — right half center */}
-            {countR !== undefined && (
-              <text x={ROAD_CX + ROAD_CX / 2} y={cy + 1}
-                fill={countR > 0 ? '#00ff99' : 'rgba(0,255,153,0.35)'}
-                fontSize={countR > 0 ? 16 : 13}
-                fontWeight="bold"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontFamily="monospace">
-                {countR}
-              </text>
-            )}
+            <text x={ROAD_CX + ROAD_CX / 2} y={cy + 1}
+              fill={countR > 0 ? '#00ff99' : 'rgba(0,255,153,0.35)'}
+              fontSize={countR > 0 ? 16 : 13}
+              fontWeight="bold"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontFamily="monospace">
+              {countR}
+            </text>
           </g>
         )
       })}
@@ -128,6 +124,30 @@ function RailTrack() {
   )
 }
 
+// ── Barrier state helpers ─────────────────────────────────────────────────────
+
+function getBarrierState(barriers, name) {
+  // Direct key lookup
+  if (barriers[name]) return barriers[name]
+  // Map IB* → first inner_* key, OB* → first outer_* key
+  if (name.startsWith('IB')) {
+    const key = Object.keys(barriers).find(k => k.startsWith('inner'))
+    if (key) return barriers[key]
+  }
+  if (name.startsWith('OB')) {
+    const key = Object.keys(barriers).find(k => k.startsWith('outer'))
+    if (key) return barriers[key]
+  }
+  return null
+}
+
+// default 0,0,0 = OPEN
+function deriveState(state) {
+  if (!state) return { armDown: false, label: 'OPEN', pivotFill: '#F5C200', labelFill: '#00c853' }
+  if (state.close)  return { armDown: true, label: 'CLOSED', pivotFill: '#F5C200', labelFill: '#ffc107' }
+  return { armDown: false, label: 'OPEN', pivotFill: '#F5C200', labelFill: '#00c853' }
+}
+
 /**
  * Barrier types:
  *   'left-half'  — pivot LEFT  edge → centre
@@ -135,7 +155,8 @@ function RailTrack() {
  *   'full-left'  — pivot LEFT  edge → RIGHT edge  (top inner barrier)
  *   'full-right' — pivot RIGHT edge → LEFT  edge  (bottom inner barrier)
  */
-function Barrier({ y, type, open = true, name }) {
+function Barrier({ y, type, state, name }) {
+  const { armDown, label, pivotFill, labelFill } = deriveState(state)
   const fromRight = type === 'right-half' || type === 'full-right'
   const pivotX    = fromRight ? PIV_R : PIV_L
   const armEnd    = fromRight
@@ -143,10 +164,11 @@ function Barrier({ y, type, open = true, name }) {
     : (type === 'full-left'  ? SVG_W  : ROAD_CX)
   const armLen    = Math.abs(armEnd - pivotX)
   const tipNear   = fromRight ? armEnd + 10 : armEnd - 10
+  const textX     = fromRight ? pivotX + 8 : pivotX - 8
+  const anchor    = fromRight ? 'start' : 'end'
 
-  // Pivot post colour: green when open, red when closed
-  // Pivot post colour: green when open, red when closed
-  const pivotFill = open ? '#1b8a4a' : '#cc1800'
+  // Top-view extend/retract: scaleX from the pivot point
+  const scaleX = armDown ? 1 : 0
 
   return (
     <>
@@ -157,35 +179,39 @@ function Barrier({ y, type, open = true, name }) {
       <circle cx={pivotX} cy={y} r={3.5} fill={pivotFill} stroke="#606878" strokeWidth="0.8"
         className="tzm-barrier-pivot" />
       {name && (
-        <text
-          x={fromRight ? pivotX + 8 : pivotX - 8}
-          y={y + 1}
-          fill="rgba(140,190,170,0.5)"
-          fontSize="7"
-          fontWeight="bold"
-          fontFamily="monospace"
-          textAnchor={fromRight ? 'start' : 'end'}
-          dominantBaseline="middle"
-        >{name}</text>
+        <>
+          <text x={textX} y={y - 4}
+            fill="rgba(140,190,170,0.5)" fontSize="7" fontWeight="bold"
+            fontFamily="monospace" textAnchor={anchor} dominantBaseline="middle"
+          >{name}</text>
+          <text x={textX} y={y + 6}
+            fill={labelFill} fontSize="6" fontWeight="bold"
+            fontFamily="monospace" textAnchor={anchor} dominantBaseline="middle"
+            className="tzm-barrier-label"
+          >{label}</text>
+        </>
       )}
 
-      {/* Arm: visible only when closed */}
-      {!open && (
-        <g className="tzm-barrier-arm">
-          <line x1={pivotX} y1={y} x2={armEnd} y2={y}
-            stroke="#F5C200" strokeWidth="2" strokeLinecap="butt" />
-          {Array.from({ length: Math.floor(armLen / 10) }, (_, i) => {
-            if (i % 2 === 0) return null
-            const bx = fromRight ? pivotX - (i + 1) * 10 : pivotX + i * 10
-            return (
-              <rect key={i} x={bx} y={y - 1.5} width={10} height={3}
-                fill="#111111" opacity="0.58" />
-            )
-          })}
-          <line x1={tipNear} y1={y} x2={armEnd} y2={y}
-            stroke="#cc1800" strokeWidth="2" strokeLinecap="butt" />
-        </g>
-      )}
+      {/* Arm: always rendered, animated via scaleX extend/retract from pivot */}
+      <g
+        className="tzm-barrier-arm"
+        style={{
+          transform: `translate(${pivotX}px, 0) scaleX(${scaleX}) translate(${-pivotX}px, 0)`,
+        }}
+      >
+        <line x1={pivotX} y1={y} x2={armEnd} y2={y}
+          stroke="#F5C200" strokeWidth="2" strokeLinecap="butt" />
+        {Array.from({ length: Math.floor(armLen / 10) }, (_, i) => {
+          if (i % 2 === 0) return null
+          const bx = fromRight ? pivotX - (i + 1) * 10 : pivotX + i * 10
+          return (
+            <rect key={i} x={bx} y={y - 1.5} width={10} height={3}
+              fill="#111111" opacity="0.58" />
+          )
+        })}
+        <line x1={tipNear} y1={y} x2={armEnd} y2={y}
+          stroke="#cc1800" strokeWidth="2" strokeLinecap="butt" />
+      </g>
     </>
   )
 }
@@ -210,7 +236,9 @@ function RoadCentreLine() {
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
-export default function TrackZoneMap({ fusionZones = {}, gateOpen = true }) {
+export default function TrackZoneMap({ fusionZones = {}, barriers = {} }) {
+  const bs = (name) => getBarrierState(barriers, name)
+
   return (
     <div className="panel track-zone-map">
       <div className="panel__header">
@@ -228,18 +256,18 @@ export default function TrackZoneMap({ fusionZones = {}, gateOpen = true }) {
           <RoadCentreLine />
 
           {/* Outer top — left + right half barriers */}
-          <Barrier y={BY_OUTER_T} type="left-half" open={gateOpen} name="OB1" />
-          <Barrier y={BY_OUTER_T} type="right-half" open={gateOpen} name="OB2" />
+          <Barrier y={BY_OUTER_T} type="left-half"  state={bs('OB1')} name="OB1" />
+          <Barrier y={BY_OUTER_T} type="right-half" state={bs('OB2')} name="OB2" />
 
           {/* Inner top — full barrier, pivot RIGHT, arm goes LEFT */}
-          <Barrier y={BY_INNER_T} type="full-right" open={gateOpen} name="IB1" />
+          <Barrier y={BY_INNER_T} type="full-right" state={bs('IB1')} name="IB1" />
 
           {/* Inner bottom — full barrier, pivot LEFT, arm goes RIGHT */}
-          <Barrier y={BY_INNER_B} type="full-left" open={gateOpen} name="IB2" />
+          <Barrier y={BY_INNER_B} type="full-left"  state={bs('IB2')} name="IB2" />
 
           {/* Outer bottom — left + right half barriers */}
-          <Barrier y={BY_OUTER_B} type="left-half" open={gateOpen} name="OB3" />
-          <Barrier y={BY_OUTER_B} type="right-half" open={gateOpen} name="OB4" />
+          <Barrier y={BY_OUTER_B} type="left-half"  state={bs('OB3')} name="OB3" />
+          <Barrier y={BY_OUTER_B} type="right-half" state={bs('OB4')} name="OB4" />
 
           <text x={ROAD_CX + 40} y={12} fill="rgba(140,190,170,0.38)" fontSize="11"
             textAnchor="middle" dominantBaseline="middle" fontFamily="monospace">▼</text>

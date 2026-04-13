@@ -7,6 +7,17 @@
   background: var(--clr-bg-base);
 }
 
+/* ── Top bar wrapper (header + GSB + train signal) ───────────────────────────── */
+.dashboard__topbar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Hide the border between header and GSB when train signal is active */
+.dashboard__topbar--train-active .sys-header {
+  border-bottom-color: transparent;
+}
+
 /* ── Main content row ─────────────────────────────────────────────────────────── */
 /* 1px gap renders as a border line via background colour on the parent */
 .dashboard__main {
@@ -17,13 +28,61 @@
   background: var(--clr-border);
 }
 
+/* ── Right Corner Overlay (Train Signal) ──────────────────────────────────────── */
+.dashboard__train-signal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 40px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  animation: alert-pulse-signal 1.2s ease-in-out infinite;
+  z-index: 10;
+  border-bottom-left-radius: 6px;
+}
+
+/* Arriving: deep amber — urgent, warmer tone */
+.dashboard__train-signal--arriving {
+  background: linear-gradient(rgba(230, 120, 15, 0.75), rgba(230, 120, 15, 0.75)), var(--clr-bg-header);
+  border-left: 2px solid rgba(255, 140, 20, 0.9);
+  border-bottom: 2px solid rgba(255, 140, 20, 0.9);
+  color: #fff3d6;
+  text-shadow: 0 0 6px rgba(255, 140, 20, 0.6);
+  box-shadow: 0 0 16px rgba(255, 140, 20, 0.55);
+}
+
+/* Departing: bright yellow — lighter, less urgent */
+.dashboard__train-signal--departing {
+  background: linear-gradient(rgba(255, 220, 40, 0.55), rgba(255, 220, 40, 0.55)), var(--clr-bg-header);
+  border-left: 2px solid rgba(255, 235, 80, 0.9);
+  border-bottom: 2px solid rgba(255, 235, 80, 0.9);
+  color: #1a1a1a;
+  font-weight: 900;
+  text-shadow: 0 0 4px rgba(255, 255, 200, 0.5);
+  box-shadow: 0 0 14px rgba(255, 235, 80, 0.45);
+}
+
+@keyframes alert-pulse-signal {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+
 /* ── Column base ──────────────────────────────────────────────────────────────── */
 .dashboard__col {
   display: flex;
   flex-direction: column;
   min-width: 0;
   background: var(--clr-bg-base);
-  gap: 1px;   /* gap between stacked panels shows as separator */
+  gap: 1px;
+  /* gap between stacked panels shows as separator */
 }
 
 /* ── Left column: Camera + Radar stacked ─────────────────────────────────────── */
@@ -31,9 +90,10 @@
   flex: 3;
 }
 
-/* ── Right column: Track Zone Map ────────────────────────────────────────────── */
+/* ── Right column: Zone Map + Gate Overview side by side ─────────────────────── */
 .dashboard__col--right {
   flex: 2;
+  flex-direction: row;
 }
 
 /* ── Manual override alert overlay ───────────────────────────────────────────── */
@@ -52,19 +112,22 @@
 }
 
 @keyframes alert-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     background: rgba(255, 20, 20, 0.11);
     border-color: rgba(255, 40, 40, 1);
     box-shadow:
       inset 0 0 350px rgba(255, 20, 20, 0.22),
-      inset 0 0 80px  rgba(255, 20, 20, 0.30);
+      inset 0 0 80px rgba(255, 20, 20, 0.30);
   }
+
   50% {
     background: rgba(255, 20, 20, 0.02);
     border-color: rgba(255, 40, 40, 0.25);
     box-shadow:
       inset 0 0 150px rgba(255, 20, 20, 0.06),
-      inset 0 0 40px  rgba(255, 20, 20, 0.08);
+      inset 0 0 40px rgba(255, 20, 20, 0.08);
   }
 }
 
@@ -74,7 +137,8 @@
   display: flex;
   gap: 1px;
   min-height: 0;
-  background: var(--clr-border);  /* gap shows as thin divider line */
+  background: var(--clr-border);
+  /* gap shows as thin divider line */
 }
 
 /* ── Radar row: two panels side by side ───────────────────────────────────── */
@@ -83,5 +147,198 @@
   display: flex;
   gap: 1px;
   min-height: 0;
-  background: var(--clr-border);  /* gap shows as thin divider line */
+  background: var(--clr-border);
+  /* gap shows as thin divider line */
+}
+
+/* ── Bottom bar with automatic button ─────────────────────────────────────── */
+.dashboard__bottombar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 6px 16px;
+  background: var(--clr-bg-header);
+  border-top: 1px solid var(--clr-border);
+  position: relative;
+}
+
+.dashboard__auto-btn {
+  padding: 9px 32px;
+  background: linear-gradient(180deg, #f5b924 0%, #d4a017 100%);
+  border: 1px solid rgba(255, 215, 80, 0.6);
+  border-radius: 6px;
+  color: #1a1200;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  box-shadow:
+    0 3px 12px rgba(245, 185, 36, 0.5),
+    0 0 0 1px rgba(0, 0, 0, 0.2) inset,
+    0 1px 0 rgba(255, 255, 255, 0.35) inset;
+  text-shadow: 0 1px 0 rgba(255, 235, 150, 0.4);
+}
+
+.dashboard__auto-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffd04a 0%, #e8b520 100%);
+  border-color: rgba(255, 235, 120, 0.9);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(245, 185, 36, 0.75),
+    0 0 0 1px rgba(0, 0, 0, 0.15) inset,
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+.dashboard__auto-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow:
+    0 1px 4px rgba(245, 185, 36, 0.4),
+    0 0 0 1px rgba(0, 0, 0, 0.25) inset;
+}
+
+.dashboard__auto-btn:disabled {
+  background: #3a3524;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.25);
+  text-shadow: none;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.dashboard__auto-ack {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #00c853;
+}
+
+/* ── Toast notification — bottom-right enterprise style ──────────────────── */
+.dashboard__toast {
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(20, 24, 36, 0.97);
+  border: 1px solid rgba(220, 53, 69, 0.45);
+  border-left: 4px solid #dc3545;
+  border-radius: 6px;
+  padding: 14px 16px;
+  min-width: 300px;
+  max-width: 420px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
+              0 0 12px rgba(220, 53, 69, 0.1);
+  z-index: 200;
+  animation: toast-in 0.3s ease-out;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard__toast-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 53, 69, 0.15);
+  border-radius: 50%;
+  font-size: 14px;
+  color: #ff5252;
+}
+
+.dashboard__toast-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.dashboard__toast-title {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dashboard__toast-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  line-height: 1.5;
+  color: #ff5252;
+}
+
+.dashboard__toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.dashboard__toast-close:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ── Success variant of the toast (automatic mode activated) ─────────────── */
+.dashboard__toast--success {
+  border: 1px solid rgba(0, 200, 83, 0.5);
+  border-left: 4px solid #00c853;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
+              0 0 14px rgba(0, 200, 83, 0.15);
+}
+
+.dashboard__toast-icon--success {
+  background: rgba(0, 200, 83, 0.18);
+  color: #00e676;
+  font-weight: 900;
+}
+
+.dashboard__toast-text--success {
+  color: #00e676;
+}
+
+/* ── Automatic button — "activated" momentary state ──────────────────────── */
+.dashboard__auto-btn--activated,
+.dashboard__auto-btn--activated:disabled {
+  background: linear-gradient(180deg, #2edd6a 0%, #00a840 100%);
+  border: 1px solid rgba(120, 255, 170, 0.7);
+  color: #06220f;
+  text-shadow: 0 1px 0 rgba(200, 255, 220, 0.45);
+  box-shadow:
+    0 4px 18px rgba(0, 200, 83, 0.6),
+    0 0 0 1px rgba(0, 0, 0, 0.15) inset,
+    0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  cursor: default;
+  transform: none;
+  opacity: 1;
+  animation: auto-activated-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes auto-activated-pulse {
+  0%, 100% { box-shadow: 0 4px 18px rgba(0, 200, 83, 0.6),
+                         0 0 0 1px rgba(0, 0, 0, 0.15) inset,
+                         0 1px 0 rgba(255, 255, 255, 0.45) inset; }
+  50%      { box-shadow: 0 6px 26px rgba(0, 200, 83, 0.85),
+                         0 0 0 1px rgba(0, 0, 0, 0.15) inset,
+                         0 1px 0 rgba(255, 255, 255, 0.55) inset; }
 }

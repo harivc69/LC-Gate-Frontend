@@ -26,7 +26,11 @@
  * For older browsers, consider GSAP or requestAnimationFrame.
  */
 .tzm-barrier-arm {
-  transition: opacity 0.8s ease-in-out;
+  transition: transform 2.5s ease-in-out;
+}
+
+.tzm-barrier-label {
+  transition: fill 1s ease-in-out;
 }
 
 .tzm-barrier-pivot {
