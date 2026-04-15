@@ -3,7 +3,7 @@ import '../styles/Dashboard.css'
 import config from '../config'
 import {
   DEFAULT_GATE, DEFAULT_STATUSES, DEFAULT_COMMAND, SUBSYSTEM_LABELS,
-  ZONE_KEYS, CLOSE_STEPS, OPEN_STEPS, CLOSE_DURATION, OPEN_DURATION,
+  ZONE_KEYS, OPEN_STEPS, OPEN_DURATION,
 } from '../defaults'
 import SystemHeader from './SystemHeader'
 import GateStatusBar from './GateStatusBar'
@@ -20,21 +20,21 @@ import { primeAlarm } from '../utils/alarm'
 export default function Dashboard() {
   const [gate, setGate] = useState({ ...DEFAULT_GATE })
   const [autoModeMsg, setAutoModeMsg] = useState(null)
-  const [autoActivated, setAutoActivated] = useState(false)    // button momentary (5s)
-  const [autoSuccessMsg, setAutoSuccessMsg] = useState(null)   // notification (persists)
+  const [autoActivated, setAutoActivated] = useState(false)  
+  const [autoSuccessMsg, setAutoSuccessMsg] = useState(null)   
   const [barriers, setBarriers] = useState({})
   const [barrierIntegrity, setBarrierIntegrity] = useState(null)
-  const [sequenceDirection, setSequenceDirection] = useState(null) // 'opening' | 'closing' | null
+  const [sequenceDirection, setSequenceDirection] = useState(null) 
 
   const [fusionZones, setFusionZones] = useState({})
   const [statuses, setStatuses] = useState({ ...DEFAULT_STATUSES })
 
-  // Refs for gate sequence management
   const mcuBarriersRef = useRef({})
   const sequenceActiveRef = useRef(false)
   const sequenceTimersRef = useRef([])
-  const prevOb2Ref = useRef(null)  // track OB2 {open, close} for edge detection
+  const prevOb2Ref = useRef(null)  
   const gateRef = useRef({ manualOverride: false })
+  const sensorsRef = useRef({ cameraOk: true, radarOk: true })
   const cmdStreamRef = useRef(null)
 
 
@@ -52,6 +52,10 @@ export default function Dashboard() {
     const stream = new FusionStream({
       onData: (data) => {
         console.debug('[Fusion] received:', data)
+        if (!sensorsRef.current.cameraOk || !sensorsRef.current.radarOk) {
+          setFusionZones({})
+          return
+        }
         // Accept fusion_zones as nested object or zone keys at top level
         if (data.fusion_zones && typeof data.fusion_zones === 'object') {
           setFusionZones(data.fusion_zones)
@@ -115,46 +119,65 @@ export default function Dashboard() {
           next.img_mpu = h.img_mpu ? 'unavailable' : 'healthy'
           next.mcu = h.mcu ? 'faulty' : 'healthy'
           next.dcdc = h.dcdc_converter ? 'faulty' : 'healthy'
+
+          sensorsRef.current = { cameraOk: !h.camera, radarOk: !h.radar }
+          if (h.camera || h.radar) {
+            setFusionZones({})
+          }
         }
 
         if (data.barrier) {
           const integ = data.barrier.integrity || null
           setBarrierIntegrity(integ)
           next.barrier = (integ === 'BARRIER_OK' || integ === 'OK') ? 'healthy' : integ
+
+          // Parse per-gate MCU signals.
+          // OB2 carries full {open, close, locked}; other OBs carry only {close}.
+          // The shared IB signal drives both IB1 and IB2 display gates.
+          const b = data.barrier
           const gates = {}
-          for (const [key, val] of Object.entries(data.barrier)) {
-            if (key !== 'integrity' && typeof val === 'object') gates[key.toUpperCase()] = val
+          if (b.ob1 && typeof b.ob1 === 'object') gates.OB1 = b.ob1
+          if (b.ob2 && typeof b.ob2 === 'object') gates.OB2 = b.ob2
+          if (b.ob3 && typeof b.ob3 === 'object') gates.OB3 = b.ob3
+          if (b.ob4 && typeof b.ob4 === 'object') gates.OB4 = b.ob4
+          if (b.ib  && typeof b.ib  === 'object') {
+            gates.IB1 = b.ib
+            gates.IB2 = b.ib
           }
-          // All gates use OB2 signal for now
+
+          // Only OB2 reports a locked flag from MCU. When OB2 is locked,
+          // the entire LC gate is locked — mirror locked+close to all gates
+          // so the overview's "LC GATE LOCKED" (allLocked) check works.
+          if (gates.OB2 && gates.OB2.locked) {
+            for (const name of ['OB1', 'OB3', 'OB4', 'IB1', 'IB2']) {
+              if (gates[name]) {
+                gates[name] = { ...gates[name], locked: 1, close: 1 }
+              }
+            }
+          }
+
+          // Opening sequence — unchanged. OB2.open edge (0→1) triggers the
+          // timed OPEN_STEPS animation across all six display gates.
           const ob2 = gates.OB2
           if (ob2) {
-            for (const name of ['OB1', 'OB3', 'OB4', 'IB1', 'IB2']) {
-              gates[name] = ob2
-            }
-
-            // Detect OB2 state change → start gate sequence
             const prev = prevOb2Ref.current
             const newClose = ob2.close ? 1 : 0
             const newOpen = ob2.open ? 1 : 0
-            const startClose = prev !== null && newClose === 1 && prev.close === 0
             const startOpen = prev !== null && newOpen === 1 && prev.open === 0
 
-            if (startClose || startOpen) {
-              const closing = startClose
+            if (startOpen) {
               // Cancel any running sequence
               sequenceTimersRef.current.forEach(t => clearTimeout(t))
               sequenceTimersRef.current = []
               sequenceActiveRef.current = true
-              setSequenceDirection(closing ? 'closing' : 'opening')
+              setSequenceDirection('opening')
 
-              const steps = closing ? CLOSE_STEPS : OPEN_STEPS
-              const duration = closing ? CLOSE_DURATION : OPEN_DURATION
-              steps.forEach(step => {
+              OPEN_STEPS.forEach(step => {
                 const t = setTimeout(() => {
                   setBarriers(prevB => {
                     const updated = { ...prevB }
                     step.gates.forEach(g => {
-                      updated[g] = { ...(updated[g] || {}), close: closing ? 1 : 0, open: closing ? 0 : 1, locked: 0 }
+                      updated[g] = { ...(updated[g] || {}), close: 0, open: 1, locked: 0 }
                     })
                     return updated
                   })
@@ -170,10 +193,24 @@ export default function Dashboard() {
                 if (Object.keys(latest).length > 0) {
                   setBarriers(latest)
                 }
-              }, duration)
+              }, OPEN_DURATION)
               sequenceTimersRef.current.push(endTimer)
             }
             prevOb2Ref.current = { close: newClose, open: newOpen }
+          }
+
+          // Closing — driven directly by MCU per-gate close signals (no
+          // animation). Partial state between first and last gate closing
+          // is surfaced as sequenceDirection='closing' for the overview label.
+          if (!sequenceActiveRef.current) {
+            const gateVals = Object.values(gates)
+            const someClosed = gateVals.some(v => v.close)
+            const allClosed  = gateVals.length > 0 && gateVals.every(v => v.close)
+            if (someClosed && !allClosed) {
+              setSequenceDirection('closing')
+            } else {
+              setSequenceDirection(null)
+            }
           }
 
           mcuBarriersRef.current = gates
