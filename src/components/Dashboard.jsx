@@ -267,6 +267,7 @@ export default function Dashboard() {
   }
 
   // ── Handle MCU auto_mode_ack response ──────────────────────
+  const autoTimerRef = useRef(null)
   useEffect(() => {
     const ack = gate.autoModeAck
     if (!ack) return
@@ -277,8 +278,11 @@ export default function Dashboard() {
       // ACK received — reset all cmd state back to defaults
       cmdStreamRef.current?.send({ ...DEFAULT_COMMAND })
       // Button reverts to normal after 5 s; notification stays until user dismisses
-      const t = setTimeout(() => setAutoActivated(false), 5000)
-      return () => clearTimeout(t)
+      if (autoTimerRef.current) clearTimeout(autoTimerRef.current)
+      autoTimerRef.current = setTimeout(() => {
+        setAutoActivated(false)
+        autoTimerRef.current = null
+      }, 5000)
     }
     // ERR_GATE_CLOSED — future scope, not handled now
   }, [gate.autoModeAck])
